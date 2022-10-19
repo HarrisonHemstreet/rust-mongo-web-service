@@ -74,9 +74,10 @@ async fn mongo_stuff() {
 
     // Query the books in the collection with a filter and an option.
     let filter = doc! { "author": "John Steinbeck" };
-    let find_options = FindOptions::builder().sort(doc! { "title": 1 }).build();
+    // let find_options = FindOptions::builder().sort(doc! { "title": 1 }).build();
     let mut cursor = typed_collection.find_one(filter, None).await;
-    println!("{:?}", cursor.unwrap().unwrap());
+    let res = cursor.unwrap().unwrap();
+    println!("{:?}", res.title);
 }
 
 #[actix_web::main]
