@@ -74,10 +74,20 @@ async fn mongo_stuff() {
 
     // Query the books in the collection with a filter and an option.
     let filter = doc! { "author": "John Steinbeck" };
-    // let find_options = FindOptions::builder().sort(doc! { "title": 1 }).build();
-    let mut cursor = typed_collection.find_one(filter, None).await;
-    let res = cursor.unwrap().unwrap();
-    println!("{:?}", res.title);
+    let find_options = FindOptions::builder().sort(doc! { "title": 2 }).build();
+    let mut cursor = typed_collection.find(filter, find_options).await;
+    // let res = cursor.unwrap();
+    // while let Some(book) = cursor.try_next().await {
+    //     println!("title: {}", book.title);
+    // }
+    // println!("{:?}", res);
+
+    let mut cursor = typed_collection.find(None, None).await;
+    let mut cursor_unwrap = cursor.unwrap();
+    // TryStream uses try_next() and iterates over Result<Option<T>>
+    while let Some(doc) = cursor_unwrap.try_next().await.unwrap() {
+        println!("{:?}", doc.title)
+    }
 }
 
 #[actix_web::main]
