@@ -1,7 +1,10 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, Result};
+mod books_service;
+
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use std::io::Result;
 // use actix_web::{get, web, App, HttpServer, };
 use mongodb::bson::{doc, Document};
-use mongodb::{options::ClientOptions, Client};
+use mongodb::Client;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -27,44 +30,61 @@ async fn wut_up() -> impl Responder {
     HttpResponse::Ok().body("wut up!")
 }
 
-#[get("/json")]
+#[post("/json")]
 async fn my_json(myres: web::Json<Record>) -> impl Responder {
     HttpResponse::Ok().body(format!("howdy {}!", myres.my_json))
     // Ok(format!("Welcome {}!", myres.my_json))
 }
 
-#[get("/")]
-async fn index(data: web::Data<AppState>) -> String {
-    let app_name = &data.app_name; // <- get app_name
-    format!("Hello {app_name}!") // <- response with app_name
-}
+// #[get("/")]
+// async fn index(data: web::Data<AppState>) -> String {
+//     let app_name = &data.app_name; // <- get app_name
+//     format!("Hello {app_name}!") // <- response with app_name
+// }
 
 // fn execute_mongo() {
 //     let _client_options = ClientOptions::parse("mongodb://localhost:3009").await;
 // }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct Book {
-    title: String,
-    author: String,
+// #[derive(Clone, Debug, Serialize, Deserialize)]
+// struct Book {
+//     title: String,
+//     author: String,
+// }
+
+// fn what_am_i(input: Collection<Document>) -> Collection<Document> {
+//     input
+// }
+
+pub struct BooksContainer {
+    books: books_service::BooksService,
+}
+
+impl BooksContainer {
+    pub fn new(books: books_service::BooksService) -> Self {
+        BooksContainer { books }
+    }
 }
 
 pub struct AppState {
-    app_name: String,
+    // app_name: String,
+    books_container: BooksContainer,
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<()> {
     let client = Client::with_uri_str("mongodb://localhost:3009").await;
     let db = client.unwrap().database("mydb");
 
-    let book_collection = db.collection::<Document>("books");
+    let books_collection = db.collection::<Document>("books");
+    // mongodb::Collection<mongodb::bson::Document>
 
-    HttpServer::new(|| {
+    HttpServer::new(move || {
+        let books_container =
+            BooksContainer::new(books_service::BooksService::new(books_collection.clone()));
+
         App::new()
-            .app_data(web::Data::new(AppState {
-                app_name: String::from("Actix Web"),
-            }))
+            .app_data(AppState { books_container })
             .service(hello)
             .service(echo)
             .service(my_json)

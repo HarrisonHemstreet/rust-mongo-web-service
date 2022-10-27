@@ -1,0 +1,8 @@
+# `docker run --name rust-mongo -p 8089:27017 -d mongo:latest`
+version: "3.9"
+services:
+  mongo:
+    build: .
+    ports:
+      - "8089:27017"
+    image: "mongo:latest"
