@@ -1,11 +1,13 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
-use futures::stream::TryStreamExt;
+// use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+// use futures::stream::TryStreamExt;
 use mongodb::bson::{doc, Document};
-use mongodb::options::FindOptions;
-use mongodb::{options::ClientOptions, Client};
-use serde::{Deserialize, Serialize};
+// use mongodb::options::FindOptions;
+// use mongodb::{options::ClientOptions, Client};
+// use serde::{Deserialize, Serialize};
 
-use mongodb::{error::Error, results::InsertOneResult, Collection};
+// use mongodb::{error::Error, results::InsertOneResult, Collection};
+// use crate::Document;
+use mongodb::Collection;
 
 // let client = Client::with_uri_str("mongodb://localhost:3009").await;
 // let db = client.unwrap().database("mydb");
@@ -18,11 +20,12 @@ pub struct BooksService {
 
 impl BooksService {
     pub fn new(collection: Collection<Document>) -> BooksService {
+        println!("in here ln 23");
         BooksService { collection }
     }
 
     // pub fn create(&self, name: &str) -> Result<InsertOneResult, Error> {
-    //     self.collection.insert_one()
+    //     self.collection.insert_one();
     // }
 }
 
