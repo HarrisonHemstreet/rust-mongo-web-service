@@ -1,6 +1,9 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+// use futures_util::stream::try_stream::TryStreamExt;
+use futures::stream::StreamExt;
 use mongodb::bson::{doc, Document};
-use mongodb::{options::ClientOptions, Client, Collection};
+use mongodb::{error::Error, results::InsertOneResult};
+use mongodb::{options::ClientOptions, Client, Collection, Cursor};
 use serde::{Deserialize, Serialize};
 
 #[get("/")]
@@ -27,26 +30,6 @@ async fn new_mongo_stuff() {
     struct Book {
         title: String,
         author: String,
-    }
-
-    #[derive(Clone, Debug, Serialize, Deserialize)]
-    struct MongoService {
-        collection: Collection<Document>,
-    }
-
-    impl MongoService {
-        pub fn new(collection: Collection<Document>) -> MongoService {
-            println!("in here ln 23");
-            MongoService { collection }
-        }
-
-        pub fn create(&self, name: &str) -> Result<InsertOneResult, Error> {
-            self.collection.insert_one(bson::doc! {"name": name}, None)
-        }
-
-        pub fn get(&self) -> Result<Option<bson::Document>, Error> {
-            self.collection.find_one(bson::doc! {}, None)
-        }
     }
 }
 
@@ -108,9 +91,83 @@ async fn mongo_stuff() -> String {
     res.title
 }
 
+#[derive(Clone, Debug)]
+struct MongoService {
+    collection: Collection<Document>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct Book {
+    title: String,
+    author: String,
+}
+
+impl MongoService {
+    pub fn new(collection: Collection<Document>) -> MongoService {
+        println!("in here ln 23");
+        MongoService { collection }
+    }
+
+    pub async fn create(&self, name: &str) -> Result<InsertOneResult, mongodb::error::Error> {
+        self.collection.insert_one(doc! {"name": name}, None).await
+    }
+
+    pub async fn create_test(&self) -> Result<InsertOneResult, mongodb::error::Error> {
+        self.collection
+            .insert_one(
+                doc! {"title": "This is a test".to_string(),
+                "author": "This is a test".to_string()},
+                None,
+            )
+            .await
+        // self.collection.insert_one(doc! {"name": name}, None).await
+    }
+
+    pub async fn get(&self) -> Result<Option<Document>, Error> {
+        self.collection.find_one(doc! {}, None).await
+    }
+
+    pub async fn get_all(&self) -> Result<Cursor<Document>, Error> {
+        self.collection.find(None, None).await
+    }
+}
+
+async fn test() {
+    println!("in here");
+    let client = Client::with_uri_str("mongodb://localhost:27017")
+        .await
+        .unwrap();
+    let database = client.database("mydb");
+    let collection = database.collection("books");
+
+    // let service_container =
+    //     ServiceContainer::new(service::UserService::new(user_collection.clone()));
+    // let books_collection = db.collection("books");
+    let mongo_service_collection = MongoService::new(collection);
+    MongoService::create_test(&mongo_service_collection)
+        .await
+        .unwrap();
+
+    let mut cursor = MongoService::get_all(&mongo_service_collection)
+        .await
+        .unwrap();
+
+    while let Some(doc) = &cursor.next().await {
+        println!("{:?}", doc)
+    }
+
+    // let res: String = cursor.await.unwrap();
+    // TryStream uses try_collect() and collects into a Result<Vec<T>>
+    // let v: <Cursor<Document>> = cursor.await.unwrap();
+    // println!("{:?}", res.title);
+    // res.title
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    mongo_stuff().await;
+    println!("in main");
+    // mongo_stuff().await;
+    test().await;
     HttpServer::new(|| {
         App::new()
             .service(hello)
