@@ -40,33 +40,12 @@ async fn mongo_stuff() -> String {
         author: String,
     }
 
-    // // Parse a connection string into an options struct.
-    let _client_options = ClientOptions::parse("mongodb://localhost:8089").await;
-
-    // Manually set an option.
-    let mut client_options_okay = _client_options.unwrap();
-
-    client_options_okay.app_name = Some("My App".to_string());
-
-    let client_options_clone = client_options_okay.app_name.clone();
-    match client_options_clone {
-        Some(val) => println!("{}", val),
-        None => println!("none value returned by client_options_clone"),
-    }
-    // Get a handle to the deployment.
-    let _client = Client::with_options(client_options_okay);
-
-    let client_clone = _client.clone();
-
-    // List the names of the databases in that deployment.
-    for db_name in _client.unwrap().list_database_names(None, None).await {
-        println!("{:?}", db_name);
-    }
-
-    let db = client_clone.unwrap().database("mydb");
+    let client = Client::with_uri_str("mongodb://localhost:8089")
+        .await
+        .unwrap();
 
     // Get a handle to a collection of `Book`.
-    let typed_collection = db.collection::<Book>("books");
+    let typed_collection = client.database("mydb").collection::<Book>("books");
 
     let books = vec![
         Book {
@@ -80,15 +59,16 @@ async fn mongo_stuff() -> String {
     ];
 
     // Insert the books into "mydb.books" collection, no manual conversion to BSON necessary.
-    typed_collection.insert_many(books, None).await;
+    typed_collection.insert_many(books, None).await.unwrap();
 
     // Query the books in the collection with a filter and an option.
     let filter = doc! { "author": "John Steinbeck" };
     // let find_options = FindOptions::builder().sort(doc! { "title": 1 }).build();
-    let mut cursor = typed_collection.find_one(filter, None).await;
-    let res = cursor.unwrap().unwrap();
-    println!("{:?}", res.title);
-    res.title
+    let mut cursor = typed_collection.find(filter, None).await.unwrap();
+    while cursor.advance().await.unwrap() {
+        println!("{:?}", cursor.deserialize_current().unwrap());
+    }
+    String::from("hi")
 }
 
 #[derive(Clone, Debug)]
@@ -148,26 +128,18 @@ async fn test() {
         .await
         .unwrap();
 
-    let mut cursor = MongoService::get_all(&mongo_service_collection)
-        .await
-        .unwrap();
-
-    while let Some(doc) = &cursor.next().await {
-        println!("{:?}", doc)
-    }
-
-    // let res: String = cursor.await.unwrap();
-    // TryStream uses try_collect() and collects into a Result<Vec<T>>
-    // let v: <Cursor<Document>> = cursor.await.unwrap();
-    // println!("{:?}", res.title);
-    // res.title
+    let mut cursor_result = MongoService::get_all(&mongo_service_collection).await;
+    let mut cursor = match cursor_result {
+        Ok(c) => c,
+        Err(e) => panic!("cursor error: {:?}", e),
+    };
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     println!("in main");
-    // mongo_stuff().await;
-    test().await;
+    mongo_stuff().await;
+    // test().await;
     HttpServer::new(|| {
         App::new()
             .service(hello)
