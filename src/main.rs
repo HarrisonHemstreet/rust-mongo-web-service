@@ -1,3 +1,6 @@
+mod mongo_service;
+use mongo_service::MongoService;
+
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 // use futures_util::stream::try_stream::TryStreamExt;
 use futures::stream::StreamExt;
@@ -25,46 +28,10 @@ async fn manual_hello() -> impl Responder {
     HttpResponse::Ok().body("Hey there!")
 }
 
-#[derive(Clone, Debug)]
-struct MongoService {
-    collection: Collection<Document>,
-    // collection: Book,
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct Book {
     title: String,
     author: String,
-}
-
-impl MongoService {
-    pub fn new(collection: Collection<Document>) -> MongoService {
-        println!("in here ln 23");
-        MongoService { collection }
-    }
-
-    pub async fn create(&self, name: &str) -> Result<InsertOneResult, mongodb::error::Error> {
-        self.collection.insert_one(doc! {"name": name}, None).await
-    }
-
-    pub async fn create_test(&self) -> Result<InsertOneResult, mongodb::error::Error> {
-        self.collection
-            .insert_one(
-                doc! {"title": "This is a test".to_string(),
-                "author": "This is a test".to_string()},
-                None,
-            )
-            .await
-        // self.collection.insert_one(doc! {"name": name}, None).await
-    }
-
-    pub async fn get(&self) -> Result<Option<Document>, Error> {
-        self.collection.find_one(doc! {}, None).await
-    }
-
-    pub async fn get_all(&self) -> Result<Cursor<Document>, Error> {
-        self.collection.find(None, None).await
-    }
 }
 
 async fn mongo_stuff() -> String {
