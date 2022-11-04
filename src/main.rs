@@ -1,8 +1,10 @@
-mod mongo_service;
-use mongo_service::MongoService;
+mod services;
+// mod services::mongo_service;
+// use services::mongo_service::MongoService;
+// use services::mongo_service;
+use services::mongo_service::MongoService;
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
-// use futures_util::stream::try_stream::TryStreamExt;
 use mongodb::bson::doc;
 use mongodb::Client;
 use serde::{Deserialize, Serialize};
@@ -37,7 +39,6 @@ async fn mongo_stuff() -> String {
         .await
         .unwrap();
 
-    // Get a handle to a collection of `Book`.
     let typed_collection = client.database("mydb").collection("books");
 
     let books_collection = MongoService::new(typed_collection);
@@ -57,7 +58,6 @@ async fn mongo_stuff() -> String {
 async fn main() -> std::io::Result<()> {
     println!("in main");
     mongo_stuff().await;
-    // test().await;
     HttpServer::new(|| {
         App::new()
             .service(hello)

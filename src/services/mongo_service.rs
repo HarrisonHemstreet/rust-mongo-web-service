@@ -2,6 +2,7 @@ use mongodb::bson::{doc, Document};
 use mongodb::{error::Error, results::InsertOneResult};
 use mongodb::{Collection, Cursor};
 
+// pub mod mongo_service {
 #[derive(Clone, Debug)]
 pub struct MongoService {
     collection: Collection<Document>,
@@ -37,3 +38,4 @@ impl MongoService {
         self.collection.find(None, None).await
     }
 }
+// }
