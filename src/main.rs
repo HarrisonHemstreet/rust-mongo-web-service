@@ -75,29 +75,16 @@ async fn mongo_stuff() -> String {
     // Get a handle to a collection of `Book`.
     let typed_collection = client.database("mydb").collection("books");
 
-    // let books_collection = MongoService::new(typed_collection);
+    let books_collection = MongoService::new(typed_collection);
 
-    let books = vec![
-        Book {
-            title: "The Grapes of Wrath".to_string(),
-            author: "John Steinbeck".to_string(),
-        },
-        Book {
-            title: "To Kill a Mockingbird".to_string(),
-            author: "Harper Lee".to_string(),
-        },
-    ];
+    let test_created = books_collection.create_test().await.unwrap();
 
-    // Insert the books into "mydb.books" collection, no manual conversion to BSON necessary.
-    typed_collection.insert_many(books, None).await.unwrap();
+    let mut retrieve_all = books_collection.get_all().await.unwrap();
 
-    // Query the books in the collection with a filter and an option.
-    let filter = doc! { "author": "John Steinbeck" };
-    // let find_options = FindOptions::builder().sort(doc! { "title": 1 }).build();
-    let mut cursor = typed_collection.find(filter, None).await.unwrap();
-    while cursor.advance().await.unwrap() {
-        println!("{:?}", cursor.deserialize_current().unwrap());
+    while retrieve_all.advance().await.unwrap() {
+        println!("{:?}", retrieve_all.deserialize_current().unwrap());
     }
+
     String::from("hi")
 }
 
