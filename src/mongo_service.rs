@@ -1,6 +1,6 @@
 use mongodb::bson::{doc, Document};
 use mongodb::{error::Error, results::InsertOneResult};
-use mongodb::{options::ClientOptions, Client, Collection, Cursor};
+use mongodb::{Collection, Cursor};
 
 #[derive(Clone, Debug)]
 pub struct MongoService {

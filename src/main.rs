@@ -3,10 +3,8 @@ use mongo_service::MongoService;
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 // use futures_util::stream::try_stream::TryStreamExt;
-use futures::stream::StreamExt;
-use mongodb::bson::{doc, Document};
-use mongodb::{error::Error, results::InsertOneResult};
-use mongodb::{options::ClientOptions, Client, Collection, Cursor};
+use mongodb::bson::doc;
+use mongodb::Client;
 use serde::{Deserialize, Serialize};
 
 #[get("/")]
@@ -44,7 +42,7 @@ async fn mongo_stuff() -> String {
 
     let books_collection = MongoService::new(typed_collection);
 
-    let test_created = books_collection.create_test().await.unwrap();
+    books_collection.create_test().await.unwrap();
 
     let mut retrieve_all = books_collection.get_all().await.unwrap();
 
@@ -53,29 +51,6 @@ async fn mongo_stuff() -> String {
     }
 
     String::from("hi")
-}
-
-async fn test() {
-    println!("in here");
-    let client = Client::with_uri_str("mongodb://localhost:27017")
-        .await
-        .unwrap();
-    let database = client.database("mydb");
-    let collection = database.collection("books");
-
-    // let service_container =
-    //     ServiceContainer::new(service::UserService::new(user_collection.clone()));
-    // let books_collection = db.collection("books");
-    let mongo_service_collection = MongoService::new(collection);
-    MongoService::create_test(&mongo_service_collection)
-        .await
-        .unwrap();
-
-    let mut cursor_result = MongoService::get_all(&mongo_service_collection).await;
-    let mut cursor = match cursor_result {
-        Ok(c) => c,
-        Err(e) => panic!("cursor error: {:?}", e),
-    };
 }
 
 #[actix_web::main]
