@@ -1,7 +1,4 @@
 mod services;
-// mod services::mongo_service;
-// use services::mongo_service::MongoService;
-// use services::mongo_service;
 use services::mongo_service::MongoService;
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
