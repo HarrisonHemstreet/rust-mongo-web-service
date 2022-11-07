@@ -361,17 +361,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cli-practice"
-version = "0.1.0"
-dependencies = [
- "actix-web",
- "futures",
- "mongodb",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "codespan-reporting"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1298,6 +1287,17 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi",
+]
+
+[[package]]
+name = "rust-mongo-web-service"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "futures",
+ "mongodb",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
