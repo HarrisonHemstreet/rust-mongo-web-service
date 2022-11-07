@@ -1,29 +1,13 @@
+mod routes;
+use crate::routes::{echo, hello, manual_hello};
+
 mod services;
 use services::mongo_service::MongoService;
 
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpServer};
 use mongodb::bson::doc;
 use mongodb::Client;
 use serde::{Deserialize, Serialize};
-
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
-}
-
-#[get("/mongotest")]
-async fn mongo_test() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
-}
-
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
-
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
-}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct Book {
