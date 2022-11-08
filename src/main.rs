@@ -7,15 +7,6 @@ mod controllers;
 use crate::controllers::test_mongo_controller;
 
 use actix_web::{web, App, HttpServer};
-use mongodb::bson::doc;
-
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct Book {
-    title: String,
-    author: String,
-}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
